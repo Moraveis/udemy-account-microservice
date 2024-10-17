@@ -29,9 +29,6 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public void createAccount(CustomerDto customerDto) {
         Customer customer = CustomerMapper.mapToCustomer(customerDto, new Customer());
-        customer.setCreatedAt(LocalDateTime.now());
-        customer.setCreatedBy("Anonymous");
-
         Optional<Customer> customerOptional = customerRepository.findByMobileNumber(customer.getMobileNumber());
 
         if (customerOptional.isPresent()) {
@@ -48,8 +45,6 @@ public class AccountServiceImpl implements AccountService {
         long randomAccNumber = 1000000000L + new Random().nextInt(900000000);
 
         newAccount.setAccountNumber(randomAccNumber);
-        newAccount.setCreatedAt(LocalDateTime.now());
-        newAccount.setCreatedBy("Anonymous");
         newAccount.setAccountType(AccountsConstants.SAVINGS);
         newAccount.setBranchAddress(AccountsConstants.ADDRESS);
         return newAccount;
