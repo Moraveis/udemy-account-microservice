@@ -17,3 +17,8 @@ java -jar ./target/accounts-0.0.1-SNAPSHOT.jar -Dspring.profiles.active="qa"
 export SPRING_PROFILE_ACTIVE="qa"
 java -jar ./target/accounts-0.0.1-SNAPSHOT.jar
 ```
+
+### Using maven commandline
+```shell
+mvn spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active='qa'"
+```
