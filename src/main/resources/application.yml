@@ -15,13 +15,14 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
-  config:
-    import:
-      - "application-qa.yml"
-      - "application-prod.yml"
-  profiles:
-    active:
-      - "qa"
+# Note: only required with you give a name different from spring pattern
+#  config:
+#    import:
+#      - "application-qa.yml"
+#      - "application-prod.yml"
+#  profiles:
+#    active:
+#      - "qa"
 
 build:
   version: "3.0"
