@@ -1,5 +1,6 @@
 server:
   port: 8080
+
 spring:
   datasource:
     url: jdbc:h2:mem:accounts
@@ -14,12 +15,19 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+  config:
+    import:
+      - "application-qa.yml"
+      - "application-prod.yml"
+  profiles:
+    active:
+      - "qa"
 
 build:
-  version: "1.0"
+  version: "3.0"
 
 accounts:
-  message: "Welcome to Accounts API"
+  message: "DEV - Welcome to Accounts API"
   contact-details:
     name: "Joao Vitor"
     email: "test@test.com"
