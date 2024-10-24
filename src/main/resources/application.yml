@@ -14,3 +14,15 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+
+build:
+  version: "1.0"
+
+accounts:
+  message: "Welcome to Accounts API"
+  contact-details:
+    name: "Joao Vitor"
+    email: "test@test.com"
+  on-call-support:
+    - (123) 456-7890
+    - (098) 765-4321
