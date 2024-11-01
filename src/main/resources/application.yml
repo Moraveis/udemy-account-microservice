@@ -20,7 +20,7 @@ spring:
   config:
     import: "optional:configserver:http://localhost:8071/"
   rabbitmq:
-    host: "localhost"
+    host: localhost
     post: 5672
     username: "guest"
     password: "guest"
