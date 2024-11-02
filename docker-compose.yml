@@ -15,96 +15,80 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
-    networks:
-      - study-group
+    extends:
+      file: common-config.yml
+      service: network-deploy-service
 
   config-service:
     build:
       context: ./../config-server
     #    image: "joaovitormoraveis/study-microservice-accounts:0.0.1"
     container_name: config-service-ms
-    ports:
-      - "8071:8071"
-    deploy:
-      resources:
-        limits:
-          memory: 700m
-    networks:
-      - study-group
+    environment:
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
     healthcheck:
+#      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health/readiness"]
       test: "curl --fail --silent localhost:8071/actuator/health/readiness | grep UP || exit 1"
       interval: 10s
       timeout: 5s
       retries: 10
       start_period: 10s
-    environment:
-      SPRING_RABBITMQ_HOST: rabbitmq
-      SPRING_RABBITMQ_PORT: 5672
+    ports:
+      - "8071:8071"
     depends_on:
       - rabbit
+    extends:
+      file: common-config.yml
+      service: microservice-base-config
 
   accounts:
     build:
       context: .
     #    image: "joaovitormoraveis/study-microservice-accounts:0.0.1"
     container_name: accounts-ms
+    environment:
+      - SPRING_APPLICATION_NAME="accounts"
     ports:
       - "8080:8080"
-    deploy:
-      resources:
-        limits:
-          memory: 700m
-    networks:
-      - study-group
-    environment:
-      - SPRING_CONFIG_IMPORT="configserver:http://config-service:8071/"
-      - SPRING_PROFILES_ACTIVE="default"
-      - SPRING_APPLICATION_NAME="accounts"
     depends_on:
       config-service:
         condition: service_healthy
+    extends:
+      file: common-config.yml
+      service: microservice-configserver-config
 
   loans:
     build:
       context: ./../loans
     #    image: "joaovitormoraveis/study-microservice-loans:0.0.1"
     container_name: loans-ms
+    environment:
+      - SPRING_APPLICATION_NAME="loans"
     ports:
       - "8081:8081"
-    deploy:
-      resources:
-        limits:
-          memory: 700m
-    networks:
-      - study-group
-    environment:
-      - SPRING_CONFIG_IMPORT="configserver:http://config-service:8071/"
-      - SPRING_PROFILES_ACTIVE="default"
-      - SPRING_APPLICATION_NAME="loans"
     depends_on:
       config-service:
         condition: service_healthy
+    extends:
+      file: common-config.yml
+      service: microservice-configserver-config
 
   cards:
     build:
       context: ./../cards
     #    image: "joaovitormoraveis/study-microservice-cards:0.0.1"
     container_name: cards-ms
+    environment:
+      - SPRING_APPLICATION_NAME="cards"
     ports:
       - "8082:8082"
-    deploy:
-      resources:
-        limits:
-          memory: 700m
-    networks:
-      - study-group
-    environment:
-      - SPRING_CONFIG_IMPORT="configserver:http://config-service:8071/"
-      - SPRING_PROFILES_ACTIVE="default"
-      - SPRING_APPLICATION_NAME="cards"
     depends_on:
       config-service:
         condition: service_healthy
+    extends:
+      file: common-config.yml
+      service: microservice-configserver-config
 
 networks:
   study-group:
