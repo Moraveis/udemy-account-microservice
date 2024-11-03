@@ -22,3 +22,10 @@ java -jar ./target/accounts-0.0.1-SNAPSHOT.jar
 ```shell
 mvn spring-boot:run -Dspring-boot.run.arguments="--spring.profiles.active='qa'"
 ```
+
+### Run Mysql docker image
+```shell
+docker run -p 3306:3306 --name accountsdb -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=accountsdb -d mysql
+docker logs --follow accountsdb
+docker exec -it accountsdb mysql -u root -p
+```
