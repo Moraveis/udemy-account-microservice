@@ -1,6 +1,10 @@
 server:
   port: 8080
 
+logging:
+  level:
+    course.udemy.springboot.accounts: DEBUG
+
 spring:
   application:
     name: accounts
