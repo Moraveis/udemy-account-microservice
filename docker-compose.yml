@@ -24,7 +24,7 @@ services:
     ports:
       - 3306:3306
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
       interval: 10s
       retries: 10
       start_period: 10s
@@ -102,6 +102,12 @@ services:
         condition: service_healthy
       eureka-server:
         condition: service_healthy
+    healthcheck:
+      test: "curl --fail --silent localhost:8080/actuator/health/readiness | grep UP || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
     extends:
       file: common-config.yml
       service: microservice-configserver-config
@@ -121,6 +127,12 @@ services:
 #        condition: service_healthy
 #      eureka-server:
 #        condition: service_healthy
+#    healthcheck:
+#      test: "curl --fail --silent localhost:8081/actuator/health/readiness | grep UP || exit 1"
+#      interval: 10s
+#      timeout: 5s
+#      retries: 10
+#      start_period: 10s
 #    extends:
 #      file: common-config.yml
 #      service: microservice-configserver-config
@@ -140,9 +152,40 @@ services:
 #        condition: service_healthy
 #      eureka-server:
 #        condition: service_healthy
+#    healthcheck:
+#      test: "curl --fail --silent localhost:8082/actuator/health/readiness | grep UP || exit 1"
+#      interval: 10s
+#      timeout: 5s
+#      retries: 10
+#      start_period: 10s
 #    extends:
 #      file: common-config.yml
 #      service: microservice-configserver-config
+
+  gateway:
+    build:
+      context: ./../gateway-server
+    #    image: "joaovitormoraveis/study-microservice-cards:0.0.1"
+    container_name: gateway-server
+    environment:
+      SPRING_APPLICATION_NAME: "gatewayserver"
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8070/eureka/
+    ports:
+      - "8072:8072"
+    depends_on:
+      config-service:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+      accounts:
+        condition: service_healthy
+#      loans:
+#        condition: service_healthy
+#      cards:
+#        condition: service_healthy
+    extends:
+      file: common-config.yml
+      service: microservice-configserver-config
 
 networks:
   study-group:
