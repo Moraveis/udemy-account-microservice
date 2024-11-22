@@ -39,10 +39,14 @@ public class CustomerServiceImpl implements CustomerService {
         customerDetailsDto.setAccountDto(AccountMapper.mapToAccountDto(account, new AccountDto()));
 
         ResponseEntity<LoanDto> loanResponse = loansClient.fetchLoanDetails(correlationId, mobileNumber);
-        customerDetailsDto.setLoanDto(loanResponse.getBody());
+        if (null != loanResponse) {
+            customerDetailsDto.setLoanDto(loanResponse.getBody());
+        }
 
         ResponseEntity<CardDto> cardResponse = cardsClient.fetchCardDetails(correlationId, mobileNumber);
-        customerDetailsDto.setCardDto(cardResponse.getBody());
+        if (null != cardResponse) {
+            customerDetailsDto.setCardDto(cardResponse.getBody());
+        }
 
         return customerDetailsDto;
     }
