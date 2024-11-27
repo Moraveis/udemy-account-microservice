@@ -6,6 +6,7 @@ import course.udemy.springboot.accounts.dto.CustomerDto;
 import course.udemy.springboot.accounts.dto.ErrorResponseDto;
 import course.udemy.springboot.accounts.dto.ResponseDto;
 import course.udemy.springboot.accounts.service.AccountService;
+import io.github.resilience4j.retry.annotation.Retry;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -15,6 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
@@ -31,6 +33,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(path = "/api/accounts", produces = MediaType.APPLICATION_JSON_VALUE)
 @RequiredArgsConstructor
 @Validated
+@Slf4j
 public class AccountsController {
 
     private final AccountService accountService;
@@ -175,9 +178,15 @@ public class AccountsController {
                     )
             )
     })
+    @Retry(name = "getBuildInfo", fallbackMethod = "getBuildInfoFallback")
     @GetMapping("/build-info")
     public ResponseEntity<String> getBuildInfo() {
         return ResponseEntity.status(HttpStatus.OK).body(buildVersion);
+    }
+
+    public ResponseEntity<String> getBuildInfoFallback(Throwable throwable) {
+        log.info("getBuildInfoFallback() method Invoked");
+        return ResponseEntity.status(HttpStatus.OK).body("0.9");
     }
 
     @Operation(
