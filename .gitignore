@@ -33,4 +33,4 @@ build/
 .vscode/
 
 ### Grafana ###
-docker/.data/minio
+docker/.data
