@@ -7,7 +7,7 @@ services:
     healthcheck:
       test: [ "CMD-SHELL", "redis-cli ping | grep PONG" ]
       timeout: 10s
-      retries: 10
+      retries: 20
     networks:
       - study-group
 
@@ -19,9 +19,9 @@ services:
       - "15672:15672"
     healthcheck:
       test: rabbitmq-diagnostics check_port_connectivity
-      interval: 10s
+      interval: 20s
       timeout: 20s
-      retries: 10
+      retries: 20
       start_period: 5s
     environment:
       RABBITMQ_DEFAULT_USER: guest
@@ -36,8 +36,8 @@ services:
       - 3306:3306
     healthcheck:
       test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
-      interval: 10s
-      retries: 10
+      interval: 20s
+      retries: 20
       start_period: 10s
       timeout: 10s
     environment:
@@ -54,11 +54,12 @@ services:
     environment:
       SPRING_RABBITMQ_HOST: rabbitmq
       SPRING_RABBITMQ_PORT: 5672
+      OTEL_SERVICE_NAME: "config-service"
     healthcheck:
       test: "curl --fail --silent localhost:8071/actuator/health/readiness | grep UP || exit 1"
-      interval: 10s
+      interval: 20s
       timeout: 5s
-      retries: 10
+      retries: 20
       start_period: 10s
     ports:
       - "8071:8071"
@@ -79,9 +80,9 @@ services:
           memory: 700m
     healthcheck:
       test: "curl --fail --silent localhost:8070/actuator/health/readiness | grep UP || exit 1"
-      interval: 10s
+      interval: 20s
       timeout: 5s
-      retries: 10
+      retries: 20
       start_period: 10s
     ports:
       - "8070:8070"
@@ -92,6 +93,7 @@ services:
       SPRING_APPLICATION_NAME: "eurekaserver"
       SPRING_PROFILES_ACTIVE: default
       SPRING_CONFIG_IMPORT: configserver:http://config-service:8071/
+      OTEL_SERVICE_NAME: "eurekaserver"
     networks:
       - study-group
 
@@ -104,6 +106,7 @@ services:
       SPRING_APPLICATION_NAME: accounts
       SPRING_DATASOURCE_URL: jdbc:mysql://database-accounts:3306/accounts
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8070/eureka/
+      OTEL_SERVICE_NAME: "accounts"
     ports:
       - "8080:8080"
     depends_on:
@@ -115,9 +118,9 @@ services:
         condition: service_healthy
     healthcheck:
       test: "curl --fail --silent localhost:8080/actuator/health/readiness | grep UP || exit 1"
-      interval: 10s
+      interval: 20s
       timeout: 5s
-      retries: 10
+      retries: 20
       start_period: 10s
     extends:
       file: common-config.yml
@@ -131,6 +134,7 @@ services:
     environment:
       SPRING_APPLICATION_NAME: loans
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8070/eureka/
+      OTEL_SERVICE_NAME: "loans"
     ports:
       - "8081:8081"
     depends_on:
@@ -140,9 +144,9 @@ services:
         condition: service_healthy
     healthcheck:
       test: "curl --fail --silent localhost:8081/actuator/health/readiness | grep UP || exit 1"
-      interval: 10s
+      interval: 20s
       timeout: 5s
-      retries: 10
+      retries: 20
       start_period: 10s
     extends:
       file: common-config.yml
@@ -156,6 +160,7 @@ services:
     environment:
       SPRING_APPLICATION_NAME: "cards"
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8070/eureka/
+      OTEL_SERVICE_NAME: "cards"
     ports:
       - "8082:8082"
     depends_on:
@@ -165,9 +170,9 @@ services:
         condition: service_healthy
     healthcheck:
       test: "curl --fail --silent localhost:8082/actuator/health/readiness | grep UP || exit 1"
-      interval: 10s
+      interval: 20s
       timeout: 5s
-      retries: 10
+      retries: 20
       start_period: 10s
     extends:
       file: common-config.yml
@@ -185,6 +190,7 @@ services:
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
       SPRING_DATA_REDIS_TIMEOUT: 1s
+      OTEL_SERVICE_NAME: "gatewayserver"
     ports:
       - "8072:8072"
     depends_on:
@@ -218,7 +224,7 @@ services:
       - minio
     healthcheck:
       test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1" ]
-      interval: 10s
+      interval: 20s
       timeout: 5s
       retries: 5
     networks: &loki-dns
@@ -238,7 +244,7 @@ services:
       - ./observability/loki-config.yaml:/etc/loki/config.yaml
     healthcheck:
       test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1" ]
-      interval: 10s
+      interval: 20s
       timeout: 5s
       retries: 5
     depends_on:
@@ -298,6 +304,19 @@ services:
       file: common-config.yml
       service: network-deploy-service
 
+  tempo:
+    image: grafana/tempo:2.4.2
+    container_name: tempo
+    command: -config.file /etc/tempo-config.yml
+    ports:
+      - "3110:3100"
+      - "4317:4317"
+    volumes:
+      - ./observability/tempo.yaml:/etc/tempo-config.yml
+    extends:
+      file: common-config.yml
+      service: network-deploy-service
+
   grafana:
     image: grafana/grafana:latest
     environment:
@@ -317,7 +336,7 @@ services:
       - ./observability/grafana-datasource.yaml:/etc/grafana/provisioning/datasources/datasource.yml
     healthcheck:
       test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1" ]
-      interval: 10s
+      interval: 20s
       timeout: 5s
       retries: 5
     extends:
@@ -401,7 +420,7 @@ services:
       - "3100:3100"
     healthcheck:
       test: ["CMD", "service", "nginx", "status"]
-      interval: 10s
+      interval: 20s
       timeout: 5s
       retries: 5
     extends:
